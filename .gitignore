@@ -1,0 +1,4 @@
+# .gitignore file for Node.js projects
+
+# Dependency directories
+node_modules/
