@@ -2,9 +2,19 @@ import { Todo } from '../models/todo.js';
 
 // There are controllers of todo, which has all the CURD operations
 const getAllTodos = async (req, res) => {
+  const sortedBy = req.query.sortedBy || 'name';
+  const sortedOrder = req.query.sortedOrder || 'asc';
+  const page = req.query.page || 0;
+  const size = req.query.size || 10;
+
   try {
-    const todos = await Todo.find();
-    console.log('todos: ', todos);
+    const todos = await Todo.find()
+      .sort({
+        [sortedBy]: sortedOrder?.toLowerCase() === 'asc' ? 1 : -1,
+      })
+      .skip(page * size)
+      .limit((page + 1) * size);
+
     res.status(200).json(todos);
   } catch (error) {
     console.log('getAllTodos error: ', error);
