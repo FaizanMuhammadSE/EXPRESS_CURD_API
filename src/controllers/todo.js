@@ -12,4 +12,28 @@ const getAllTodos = async (req, res) => {
   }
 };
 
-export { getAllTodos };
+const addTodo = async (req, res) => {
+  const { status, name, description } = req.body || {};
+  if (!status || !name || !description) {
+    const missingField =
+      (!status && 'Status') ||
+      (!name && 'Name') ||
+      (!description && 'Description');
+    res.status(400).json({ message: `${missingField} is required` });
+  } else {
+    const newTodo = new Todo({
+      status,
+      name,
+      description,
+    });
+    try {
+      const todo = await newTodo.save();
+      res.status(201).json(todo);
+    } catch (error) {
+      console.log('addTodo error: ', error);
+      res.status(500).json({ message: 'Internal Server Error' });
+    }
+  }
+};
+
+export { getAllTodos, addTodo };
