@@ -1,5 +1,5 @@
 import express from 'express';
-import { addTodo, getAllTodos } from '../controllers/todo.js';
+import { addTodo, getAllTodos, updateTodo } from '../controllers/todo.js';
 
 const todoRouter = express.Router();
 
@@ -9,6 +9,7 @@ todoRouter.use((req, res, next) => {
 });
 
 todoRouter.route('/').get(getAllTodos).post(addTodo);
+todoRouter.route('/:id').put(updateTodo);
 
 export { todoRouter };
 

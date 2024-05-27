@@ -36,4 +36,31 @@ const addTodo = async (req, res) => {
   }
 };
 
-export { getAllTodos, addTodo };
+const updateTodo = async (req, res) => {
+  const { id } = req.params;
+  const { status, name, description } = req.body || {};
+  if (!status || !name || !description) {
+    const missingField =
+      (!status && 'Status') ||
+      (!name && 'Name') ||
+      (!description && 'Description');
+    res.status(400).json({ message: `${missingField} is required` });
+  } else {
+    try {
+      const todo = await Todo.findByIdAndUpdate(
+        id,
+        {
+          status,
+          name,
+          description,
+        },
+        { new: true } // Will give you object after the update
+      );
+      res.status(200).json(todo);
+    } catch (error) {
+      console.log('updateTodo error: ', error);
+      res.status(500).json({ message: 'Internal Server Error' });
+    }
+  }
+};
+export { getAllTodos, addTodo, updateTodo };
