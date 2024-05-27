@@ -1,16 +1,16 @@
 import express from 'express';
+import { getAllTodos } from '../controllers/todo.js';
 
-const router = express.Router();
+const todoRouter = express.Router();
 
-router.use((req, res) => {
+todoRouter.use((req, res, next) => {
   console.log('Todo Router :', new Date().toLocaleString());
+  next();
 });
 
-router.get('/', (req, res) => {
-  res.send('Here is a list of todos');
-});
+todoRouter.get('/', getAllTodos);
 
-export default router;
+export { todoRouter };
 
 // Altough we can define routes using express app directly, but we have a better way to define modular routes
 // by using Router. A Router instance is a complete middleware and routing system; for this reason, it is often referred to as a “mini-app”.
