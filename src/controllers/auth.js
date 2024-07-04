@@ -1,4 +1,5 @@
-import { SALT_ROUNDS } from '../constants/index.js';
+import jwt from 'jsonwebtoken';
+import { EXPIREY_IN_HOURS, SALT_ROUNDS } from '../constants/index.js';
 import { User } from '../models/index.js';
 import bcrypt from 'bcrypt';
 
@@ -59,13 +60,50 @@ export const loginHandler = async (req, res) => {
      * Validate user provided password with hashedPassword
      */
     const isValidPassword = await bcrypt.compare(password, user[0].password);
-    if (isValidPassword) res.status(200).json({ message: 'login successful' });
-    else
+    if (isValidPassword) {
+      const token = jwt.sign(
+        { name: user[0].username },
+        process.env.SECRET_KEY,
+        { expiresIn: `${EXPIREY_IN_HOURS}h` }
+      );
+
+      res.cookie('Authorization', `Bearer ${token}`, {
+        maxAge: EXPIREY_IN_HOURS * 60 * 60 * 1000, // milliseconds
+        secure: true, // Ensures the cookie is only sent over HTTPS
+        httpOnly: true,
+        sameSite: 'None',
+      });
+
+      res.status(200).json({ message: 'login successful' });
+    } else {
       res
         .status(400)
         .json({ message: 'Invalid Credentials, Please Try Again!' });
+    }
   } catch (error) {
     console.log('loginHandler error: ', error);
     res.status(500).json({ message: 'Internal Server Error' });
+  }
+};
+
+export const checkAuth = async (req, res, next) => {
+  if (!req.cookies) {
+    res.status(401).json({ message: 'Unauthorized! Please Login First...' });
+    return;
+  }
+  console.log(req.cookies.Authorization);
+  const token = req.cookies.Authorization;
+  if (!token) {
+    res.status(401).json({ message: 'Unauthorized! Please Login First...' });
+    return;
+  }
+
+  try {
+    const user = jwt.verify(token?.split(' ')?.[1], process.env.SECRET_KEY);
+    req.user = user;
+    next();
+  } catch (error) {
+    console.log('checkAuth error: ', error);
+    res.status(401).json({ message: 'Unauthorized! Please Login First...' });
   }
 };
